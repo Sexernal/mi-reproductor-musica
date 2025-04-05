@@ -1,0 +1,25 @@
+# Excluir la carpeta de dependencias de Node.js
+node_modules/
+
+# Excluir archivos de entorno (variables sensibles)
+.env
+
+# Excluir archivos de registro y temporales
+*.log
+*.tmp
+
+# Excluir carpetas de compilación o distribución
+dist/
+build/
+out/
+
+# Excluir archivos específicos grandes (como electron.exe)
+electron.exe
+*.exe
+
+# Excluir archivos del sistema operativo (ej: macOS)
+.DS_Store
+
+# Opcional: Excluir package-lock.json si usas npm ci
+# (pero generalmente es recomendable incluirlo)
+# package-lock.json

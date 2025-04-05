@@ -1,0 +1,23 @@
+{
+  "name": "mi-reproductor-musica",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sexernal/mi-reproductor-musica.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sexernal/mi-reproductor-musica/issues"
+  },
+  "homepage": "https://github.com/sexernal/mi-reproductor-musica#readme",
+  "devDependencies": {
+    "electron": "^35.1.4"
+  }
+}
