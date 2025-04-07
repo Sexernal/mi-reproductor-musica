@@ -1,12 +1,34 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
-    <title>Reproductor de Música</title>
+    <title>MP3 Player</title>
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
-    <h1>¡Hola Mundo!</h1>
+    <!-- Reproductor -->
+    <div class="player">
+      <img id="song-image" src="assets/default-cover.jpg" class="album-cover">
+      <h1 id="song-title">IVE - Off the Record</h1>
+      
+      <!-- Barra de progreso -->
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+      
+      <!-- Tiempo -->
+      <div class="time-display">
+        <span id="current-time">0:00</span> / 
+        <span id="total-time">3:08</span>
+      </div>
+
+      <!-- Controles -->
+      <div class="controls">
+        <button id="prev-btn">⏮</button>
+        <button id="play-btn">▶</button>
+        <button id="next-btn">⏭</button>
+      </div>
+    </div>
+
     <script src="src/player.js"></script>
   </body>
 </html>
