@@ -1,86 +1,140 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const { ipcRenderer } = require('electron');
   const path = require('path');
-  
-  // Lista de canciones
-  const songs = [
-    { 
-      title: "Los pololos", 
-      file: path.join(__dirname, 'songs', 'pololos.mp3'),
-      cover: path.join(__dirname, 'assets', 'pololos.jpeg'),
-      duration: "3:08"
-    },
-    { 
-      title: "Yapapa", 
-      file: path.join(__dirname, 'songs', 'opening1RANMA.mp3'),
-      cover: path.join(__dirname, 'assets', 'ranma.webp'),
-      duration: "2:45"
-    }
-  ];
+  const fs = require('fs');
 
   // Elementos del DOM
   const audioPlayer = new Audio();
   const songTitle = document.getElementById("song-title");
   const songImage = document.getElementById("song-image");
   const playBtn = document.getElementById("play-btn");
-  const prevBtn = document.getElementById("prev-btn");
-  const nextBtn = document.getElementById("next-btn");
+  const selectFolderBtn = document.getElementById("select-folder-btn");
+  const progressContainer = document.querySelector(".progress-container");
   const progressBar = document.querySelector(".progress-bar");
-  const currentTimeDisplay = document.getElementById("current-time");
-  const totalTimeDisplay = document.getElementById("total-time");
+  const currentTimeEl = document.getElementById("current-time");
+  const durationEl = document.getElementById("duration");
+  const hamburgerBtn = document.getElementById("hamburger-btn");
+  const songsMenu = document.getElementById("songs-menu");
+  const songsList = document.getElementById("songs-list");
+  const minBtn = document.getElementById("min-btn");
+  const closeBtn = document.getElementById("close-btn");
 
+  let songs = [];
   let currentSongIndex = 0;
 
-  // Cargar canción
+  // Función para formatear los segundos en minutos:segundos
+  function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
+
+  // Carga y reproduce una canción
   function loadSong(song) {
     audioPlayer.src = song.file;
     songTitle.textContent = song.title;
-    songImage.src = song.cover;
-    totalTimeDisplay.textContent = song.duration;
+    songImage.src = song.cover || path.join(__dirname, 'assets', 'DK.png');
+    audioPlayer.play().catch(err => console.error('Error al reproducir:', err));
+    playBtn.textContent = '⏸';
   }
 
-  // Actualizar barra de progreso
-  function updateProgress(e) {
-    const { duration, currentTime } = e.srcElement;
-    const progressPercent = (currentTime / duration) * 100;
-    progressBar.style.width = `${progressPercent}%`;
-    
-    // Formatear tiempo
-    const formatTime = (time) => {
-      const minutes = Math.floor(time / 60);
-      const seconds = Math.floor(time % 60);
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-    
-    currentTimeDisplay.textContent = formatTime(currentTime);
+  // Refrescar la lista de canciones en el menú hamburger
+  function populateSongsList() {
+    songsList.innerHTML = '';
+    songs.forEach((song, index) => {
+      const li = document.createElement('li');
+      li.textContent = song.title;
+      li.addEventListener('click', () => {
+        currentSongIndex = index;
+        loadSong(songs[currentSongIndex]);
+        toggleSongsMenu(false); // Cierra el menú al seleccionar
+      });
+      songsList.appendChild(li);
+    });
   }
 
-  // Event Listeners
-  audioPlayer.addEventListener("timeupdate", updateProgress);
-  
-  playBtn.addEventListener("click", () => {
-    if (audioPlayer.paused) {
-      audioPlayer.play();
-      playBtn.textContent = "⏸";
+  // Mostrar/ocultar el menú de canciones
+  function toggleSongsMenu(forceHide = null) {
+    // forceHide: si es true, lo cierra; si es false, lo abre; si es null, alterna
+    if (forceHide === true) {
+      songsMenu.classList.add('hidden');
+    } else if (forceHide === false) {
+      songsMenu.classList.remove('hidden');
     } else {
-      audioPlayer.pause();
-      playBtn.textContent = "▶";
+      songsMenu.classList.toggle('hidden');
+    }
+  }
+
+  // Actualiza la barra de progreso en tiempo real
+  audioPlayer.addEventListener('timeupdate', () => {
+    if (audioPlayer.duration) {
+      const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+      currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+      durationEl.textContent = formatTime(audioPlayer.duration);
     }
   });
 
-  prevBtn.addEventListener("click", () => {
-    currentSongIndex--;
-    if (currentSongIndex < 0) currentSongIndex = songs.length - 1;
-    loadSong(songs[currentSongIndex]);
-    audioPlayer.play();
+  // Permite mover la barra de progreso al hacer clic
+  progressContainer.addEventListener('click', (e) => {
+    if (audioPlayer.duration) {
+      const rect = progressContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const newTime = (clickX / rect.width) * audioPlayer.duration;
+      audioPlayer.currentTime = newTime;
+    }
   });
 
-  nextBtn.addEventListener("click", () => {
-    currentSongIndex++;
-    if (currentSongIndex >= songs.length) currentSongIndex = 0;
-    loadSong(songs[currentSongIndex]);
-    audioPlayer.play();
+  // Evento para seleccionar carpeta
+  selectFolderBtn.addEventListener('click', async () => {
+    try {
+      const folderPaths = await ipcRenderer.invoke('open-folder-dialog');
+      if (folderPaths && folderPaths.length > 0) {
+        const folderPath = folderPaths[0];
+        const files = fs.readdirSync(folderPath);
+
+        songs = files
+          .filter(file => path.extname(file).toLowerCase() === '.mp3')
+          .map(file => ({
+            title: path.basename(file, '.mp3'),
+            file: path.join(folderPath, file),
+            cover: path.join(__dirname, 'assets', 'default-cover.jpg')
+          }));
+
+        if (songs.length > 0) {
+          currentSongIndex = 0;
+          loadSong(songs[currentSongIndex]);
+          populateSongsList(); // Crea la lista en el menú
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar carpeta:', err);
+    }
   });
 
-  // Iniciar
-  loadSong(songs[currentSongIndex]);
+  // Botón de reproducir/pausar
+  playBtn.addEventListener('click', () => {
+    if (audioPlayer.paused) {
+      audioPlayer.play().catch(err => console.error('Error al reproducir:', err));
+      playBtn.textContent = '⏸';
+    } else {
+      audioPlayer.pause();
+      playBtn.textContent = '▶';
+    }
+  });
+
+  // Botón hamburger para mostrar/ocultar lista de canciones
+  hamburgerBtn.addEventListener('click', () => {
+    toggleSongsMenu();
+  });
+
+  // Botón minimizar
+  minBtn.addEventListener('click', () => {
+    ipcRenderer.send('minimize-app');
+  });
+
+  // Botón cerrar
+  closeBtn.addEventListener('click', () => {
+    ipcRenderer.send('close-app');
+  });
 });

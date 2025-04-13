@@ -18,6 +18,10 @@
   },
   "homepage": "https://github.com/sexernal/mi-reproductor-musica#readme",
   "devDependencies": {
-    "electron": "^35.1.4"
+    "electron": "^35.1.5"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
   }
 }

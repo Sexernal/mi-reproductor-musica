@@ -1,34 +1,51 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>MP3 Player</title>
-    <link rel="stylesheet" href="css/styles.css">
-  </head>
-  <body>
-    <!-- Reproductor -->
-    <div class="player">
-      <img id="song-image" src="assets/default-cover.jpg" class="album-cover">
-      <h1 id="song-title">IVE - Off the Record</h1>
-      
-      <!-- Barra de progreso -->
-      <div class="progress-container">
-        <div class="progress-bar"></div>
-      </div>
-      
-      <!-- Tiempo -->
-      <div class="time-display">
-        <span id="current-time">0:00</span> / 
-        <span id="total-time">3:08</span>
-      </div>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Music Player</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-      <!-- Controles -->
-      <div class="controls">
-        <button id="prev-btn">⏮</button>
-        <button id="play-btn">▶</button>
-        <button id="next-btn">⏭</button>
-      </div>
+  <!-- Barra superior con arrastre y botones de control -->
+  <header class="titlebar">
+    <!-- Ícono de menú tipo hamburger -->
+    <button id="hamburger-btn" class="hamburger-btn" title="Mostrar/Ocultar Lista">&#9776;</button>
+
+    <!-- Zona de arrastre (no incluye los botones) -->
+    <div class="drag-area">Music Player</div>
+
+    <!-- Botones de la ventana (minimizar y cerrar) -->
+    <div class="window-controls">
+      <button id="min-btn" class="control-btn" title="Minimizar">—</button>
+      <button id="close-btn" class="control-btn" title="Cerrar">✕</button>
+    </div>
+  </header>
+
+  <!-- Menú desplegable con la lista de canciones -->
+  <nav id="songs-menu" class="songs-menu hidden">
+    <ul id="songs-list"></ul>
+  </nav>
+
+  <!-- Contenedor principal del reproductor -->
+  <div class="player">
+    <img id="song-image" class="album-cover" src="assets/DK.png">
+    <h2 id="song-title">Selecciona una carpeta 📁</h2>
+
+    <div class="controls">
+      <button id="select-folder-btn">📁</button>
+      <button id="play-btn">▶</button>
     </div>
 
-    <script src="src/player.js"></script>
-  </body>
+    <!-- Barra de progreso -->
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+    <div class="time-display">
+      <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+</body>
 </html>
