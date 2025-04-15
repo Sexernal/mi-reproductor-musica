@@ -6,43 +6,45 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-  <!-- Barra superior con arrastre y botones de control -->
+  <!-- Barra superior con controles -->
   <header class="titlebar">
-    <!-- Ícono de menú tipo hamburger -->
     <button id="hamburger-btn" class="hamburger-btn" title="Mostrar/Ocultar Lista">&#9776;</button>
-
-    <!-- Zona de arrastre (no incluye los botones) -->
-    <div class="drag-area">Music Player</div>
-
-    <!-- Botones de la ventana (minimizar y cerrar) -->
+    <div class="drag-area">Sexernal</div>
+    
+    <!-- Controles de ventana y carpeta -->
     <div class="window-controls">
+      <button id="select-folder-btn" class="control-btn" title="Seleccionar Carpeta">📁</button>
       <button id="min-btn" class="control-btn" title="Minimizar">—</button>
       <button id="close-btn" class="control-btn" title="Cerrar">✕</button>
     </div>
   </header>
 
-  <!-- Menú desplegable con la lista de canciones -->
+  <!-- Menú desplegable de canciones -->
   <nav id="songs-menu" class="songs-menu hidden">
     <ul id="songs-list"></ul>
   </nav>
 
-  <!-- Contenedor principal del reproductor -->
-  <div class="player">
-    <img id="song-image" class="album-cover" src="assets/DK.png">
-    <h2 id="song-title">Selecciona una carpeta 📁</h2>
+  <!-- Título de la canción -->
+  <div class="track-title-container">
+    <h2 id="song-title" class="song-title">Selecciona una carpeta</h2>
+  </div>
 
-    <div class="controls">
-      <button id="select-folder-btn">📁</button>
-      <button id="play-btn">▶</button>
+  <!-- Portada y progreso -->
+  <div class="cover-container">
+    <img id="song-image" class="album-cover" src="assets/DK.png" alt="Portada">
+    <div class="progress-overlay">
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- Barra de progreso -->
-    <div class="progress-container">
-      <div class="progress-bar"></div>
-    </div>
-    <div class="time-display">
-      <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+  <!-- Controles de reproducción -->
+  <div class="controls-wrapper">
+    <div class="controls-container">
+      <button id="prev-btn" class="control-btn-large" title="Canción anterior">⏮</button>
+      <button id="play-btn" class="control-btn-large" title="Reproducir/Pausar">▶</button>
+      <button id="next-btn" class="control-btn-large" title="Siguiente canción">⏭</button>
     </div>
   </div>
 

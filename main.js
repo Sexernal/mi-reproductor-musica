@@ -2,8 +2,8 @@ const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 350,
-    height: 400,
+    width: 325,
+    height: 450,
     resizable: false,
     transparent: true,
     frame: false,
@@ -26,7 +26,7 @@ function createWindow() {
     }
   });
 
-  // Eventos para minimizar y cerrar la ventana
+  // Eventos IPC para minimizar y cerrar la ventana
   ipcMain.on('minimize-app', () => {
     if (!win.isMinimized()) {
       win.minimize();
@@ -37,25 +37,23 @@ function createWindow() {
     win.close();
   });
 
-  // Carga el archivo HTML principal
+  // Cargar el archivo HTML principal
   win.loadFile('index.html');
   Menu.setApplicationMenu(null);
 
-  // Descomenta para debug
+  // Para depuración, descomenta la siguiente línea:
   // win.webContents.openDevTools();
 }
 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  // En macOS, es común que las apps sigan activas hasta que el usuario cierra explícitamente
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
 app.on('activate', () => {
-  // En macOS, volver a crear ventana si no hay otras ventanas abiertas
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
