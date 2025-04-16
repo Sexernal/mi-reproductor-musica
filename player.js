@@ -61,11 +61,18 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (forceHide === false) {
       songsMenu.classList.remove('hidden');
     } else {
-      songsMenu.classList.toggle('hidden');
+      // Utilizamos la clase "show" para activar la animación; si está oculta (con "hidden") se quita
+      if (songsMenu.classList.contains("hidden")) {
+        songsMenu.classList.remove("hidden");
+        songsMenu.classList.add("show");
+      } else {
+        songsMenu.classList.remove("show");
+        songsMenu.classList.add("hidden");
+      }
     }
   }
 
-  // Actualiza la barra de progreso y la visualización del tiempo
+  // Actualiza la barra de progreso
   audioPlayer.addEventListener('timeupdate', () => {
     if (audioPlayer.duration) {
       const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
@@ -135,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Botón hamburguesa para mostrar/ocultar la lista de canciones
+  // Botón hamburguesa para mostrar/ocultar el menú de canciones
   hamburgerBtn.addEventListener('click', () => {
     toggleSongsMenu();
   });

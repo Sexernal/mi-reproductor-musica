@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 function createWindow() {
   const win = new BrowserWindow({
     width: 325,
-    height: 450,
+    height: 435,
     resizable: false,
     transparent: true,
     frame: false,
@@ -32,7 +32,6 @@ function createWindow() {
       win.minimize();
     }
   });
-
   ipcMain.on('close-app', () => {
     win.close();
   });
@@ -40,7 +39,6 @@ function createWindow() {
   // Cargar el archivo HTML principal
   win.loadFile('index.html');
   Menu.setApplicationMenu(null);
-
   // Para depuración, descomenta la siguiente línea:
   // win.webContents.openDevTools();
 }

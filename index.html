@@ -19,17 +19,17 @@
     </div>
   </header>
 
-  <!-- Menú desplegable de canciones -->
-  <nav id="songs-menu" class="songs-menu hidden">
+  <!-- Menú desplegable de canciones (se quita la clase "hidden") -->
+  <nav id="songs-menu" class="songs-menu">
     <ul id="songs-list"></ul>
   </nav>
 
-  <!-- Título de la canción -->
+  <!-- Contenedor del título de la canción -->
   <div class="track-title-container">
     <h2 id="song-title" class="song-title">Selecciona una carpeta</h2>
   </div>
 
-  <!-- Portada y progreso -->
+  <!-- Contenedor de la portada y la barra de progreso superpuesta -->
   <div class="cover-container">
     <img id="song-image" class="album-cover" src="assets/DK.png" alt="Portada">
     <div class="progress-overlay">
@@ -39,13 +39,11 @@
     </div>
   </div>
 
-  <!-- Controles de reproducción -->
-  <div class="controls-wrapper">
-    <div class="controls-container">
-      <button id="prev-btn" class="control-btn-large" title="Canción anterior">⏮</button>
-      <button id="play-btn" class="control-btn-large" title="Reproducir/Pausar">▶</button>
-      <button id="next-btn" class="control-btn-large" title="Siguiente canción">⏭</button>
-    </div>
+  <!-- Contenedor de controles de reproducción -->
+  <div class="controls-container">
+    <button id="prev-btn" class="control-btn-large" title="Canción anterior">⏮</button>
+    <button id="play-btn" class="control-btn-large" title="Reproducir/Pausar">▶</button>
+    <button id="next-btn" class="control-btn-large" title="Siguiente canción">⏭</button>
   </div>
 
   <script src="player.js"></script>

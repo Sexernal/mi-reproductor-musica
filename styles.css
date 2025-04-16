@@ -75,18 +75,43 @@ body {
   background: rgba(255,255,255,0.2);
 }
 
-/* Menú de canciones desplegable */
+/* Menú de canciones desplegable con animación */
 .songs-menu {
   position: absolute;
   top: 30px;
   left: 0;
-  width: 200px;
+  width: 220px;
   max-height: 300px;
-  background: rgba(72,0,72,0.95);
+  background: rgba(72, 0, 72, 0.95);
   padding: 10px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   overflow-y: auto;
   z-index: 100;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+}
+
+.songs-menu.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.songs-menu::-webkit-scrollbar {
+  width: 8px;
+}
+.songs-menu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+.songs-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+.songs-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .songs-menu ul {
@@ -105,10 +130,6 @@ body {
 
 .songs-menu li:hover {
   background: rgba(255,255,255,0.2);
-}
-
-.hidden {
-  display: none;
 }
 
 /* Contenedor del título de la canción */
@@ -133,7 +154,7 @@ body {
 /* Contenedor de portada y progreso */
 .cover-container {
   position: relative;
-  width: 300px;
+  width: 300px;  /* Se aumenta el ancho de la portada */
 }
 
 .album-cover {
@@ -143,12 +164,12 @@ body {
   border-radius: 10px;
 }
 
-/* Barra de progreso */
+/* Barra de progreso en superposición */
 .progress-overlay {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
+  left: 15px;
+  width: 90%;
 }
 
 .progress-container {
@@ -168,31 +189,34 @@ body {
   transition: width 0.1s ease-in-out;
 }
 
-/* Contenedor de controles de reproducción */
+/* Contenedor de controles de reproducción, con mayor espacio abajo */
 .controls-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: 35px;
   background: rgba(255,255,255,0.1);
-  padding: 12px;
+  padding: 10px;
   border-radius: 25px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-top: 15px;
 }
 
+/* Botones grandes de control */
 .control-btn-large {
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.3);
+  background: linear-gradient(45deg, #8631cc, #8631cc);
+  border: none;
   color: white;
-  font-size: 20px;
-  width: 50px;
-  height: 50px;
+  font-size: 18px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.3s, background 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .control-btn-large:hover {
-  background: rgba(255,255,255,0.2);
-  transform: scale(1.1);
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
