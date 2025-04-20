@@ -2,13 +2,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const { ipcRenderer } = require('electron');
   const path = require('path');
   const fs = require('fs');
+  const NodeID3 = require('node-id3');
 
-  // Elementos del DOM (según el nuevo layout)
+  // --- Helpers para portada ---
+  function getDefaultCover() {
+    return `file://${path.join(__dirname, 'assets', 'DK.png')}`;
+  }
+  function getCoverFromID3(filePath) {
+    try {
+      const tags = NodeID3.read(filePath);
+      if (tags.image && tags.image.imageBuffer) {
+        const base64 = tags.image.imageBuffer.toString('base64');
+        return `data:${tags.image.mime};base64,${base64}`;
+      }
+    } catch (err) {
+      console.error('Error leyendo ID3 de', filePath, err);
+    }
+    return getDefaultCover();
+  }
+
+  // --- Elementos del DOM ---
   const audioPlayer = new Audio();
   const songTitle = document.getElementById("song-title");
   const songImage = document.getElementById("song-image");
   const playBtn = document.getElementById("play-btn");
   const selectFolderBtn = document.getElementById("select-folder-btn");
+  const shuffleBtn = document.getElementById("shuffle-btn");
   const progressContainer = document.querySelector(".progress-container");
   const progressBar = document.querySelector(".progress-bar");
   const hamburgerBtn = document.getElementById("hamburger-btn");
@@ -22,100 +41,117 @@ document.addEventListener("DOMContentLoaded", () => {
   let songs = [];
   let currentSongIndex = 0;
 
-  // Función para formatear el tiempo (mm:ss)
-  function formatTime(time) {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  }
-
-  // Carga y reproduce la canción
-  function loadSong(song) {
+  // Muestra título + portada, sin reproducir
+  function showSong(song) {
     audioPlayer.src = song.file;
     songTitle.textContent = song.title;
-    // Utiliza la imagen de portada proporcionada o la por defecto
-    songImage.src = song.cover || path.join(__dirname, 'assets', 'DK.png');
+    songImage.src = song.cover;
+    playBtn.textContent = '▶';
+  }
+
+  // Carga y reproduce
+  function loadSong(song) {
+    showSong(song);
     audioPlayer.play().catch(err => console.error('Error al reproducir:', err));
     playBtn.textContent = '⏸';
   }
 
-  // Genera la lista de canciones para el menú hamburguesa
+  function nextSong() {
+    if (!songs.length) return;
+    currentSongIndex = (currentSongIndex + 1) % songs.length;
+    loadSong(songs[currentSongIndex]);
+  }
+
+  function prevSong() {
+    if (!songs.length) return;
+    currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+    loadSong(songs[currentSongIndex]);
+  }
+
+  // Lista de canciones
   function populateSongsList() {
     songsList.innerHTML = '';
-    songs.forEach((song, index) => {
+    songs.forEach((song, idx) => {
       const li = document.createElement('li');
       li.textContent = song.title;
       li.addEventListener('click', () => {
-        currentSongIndex = index;
-        loadSong(songs[currentSongIndex]);
-        toggleSongsMenu(false);
+        currentSongIndex = idx;
+        loadSong(song);
+        songsMenu.classList.add('hidden');
       });
       songsList.appendChild(li);
     });
   }
 
-  // Alterna la visibilidad del menú de canciones
   function toggleSongsMenu(forceHide = null) {
     if (forceHide === true) {
       songsMenu.classList.add('hidden');
     } else if (forceHide === false) {
       songsMenu.classList.remove('hidden');
     } else {
-      // Utilizamos la clase "show" para activar la animación; si está oculta (con "hidden") se quita
-      if (songsMenu.classList.contains("hidden")) {
-        songsMenu.classList.remove("hidden");
-        songsMenu.classList.add("show");
-      } else {
-        songsMenu.classList.remove("show");
-        songsMenu.classList.add("hidden");
-      }
+      songsMenu.classList.toggle('show');
+      songsMenu.classList.toggle('hidden');
     }
   }
 
-  // Actualiza la barra de progreso
+  // Barras de progreso
   audioPlayer.addEventListener('timeupdate', () => {
-    if (audioPlayer.duration) {
-      const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-      progressBar.style.width = `${progressPercent}%`;
+    if (!isNaN(audioPlayer.duration)) {
+      const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressBar.style.width = `${pct}%`;
     }
   });
-
-  // Permite interactuar con la barra de progreso mediante clic
-  progressContainer.addEventListener('click', (e) => {
-    if (audioPlayer.duration) {
+  progressContainer.addEventListener('click', e => {
+    if (!isNaN(audioPlayer.duration)) {
       const rect = progressContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
-      const newTime = (clickX / rect.width) * audioPlayer.duration;
-      audioPlayer.currentTime = newTime;
+      audioPlayer.currentTime = (clickX / rect.width) * audioPlayer.duration;
     }
   });
 
-  // Evento para seleccionar carpeta y cargar pistas de audio
+  // Al acabar, siguiente pista
+  audioPlayer.addEventListener('ended', nextSong);
+
+  // Selección de carpeta (no auto-play)
   selectFolderBtn.addEventListener('click', async () => {
     try {
-      const folderPaths = await ipcRenderer.invoke('open-folder-dialog');
-      if (folderPaths && folderPaths.length > 0) {
-        const folderPath = folderPaths[0];
-        const files = fs.readdirSync(folderPath);
-        songs = files
-          .filter(file => path.extname(file).toLowerCase() === '.mp3')
-          .map(file => ({
-            title: path.basename(file, '.mp3'),
-            file: path.join(folderPath, file),
-            cover: path.join(__dirname, 'assets', 'default-cover.jpg')
-          }));
-        if (songs.length > 0) {
-          currentSongIndex = 0;
-          loadSong(songs[currentSongIndex]);
-          populateSongsList();
-        }
+      const paths = await ipcRenderer.invoke('open-folder-dialog');
+      if (!paths || !paths.length) return;
+      const folder = paths[0];
+      const allFiles = fs.readdirSync(folder);
+      const mp3Files = allFiles.filter(f => path.extname(f).toLowerCase() === '.mp3');
+
+      songs = mp3Files.map(file => {
+        const fullPath = path.join(folder, file);
+        return {
+          title: path.basename(file, '.mp3'),
+          file: fullPath,
+          cover: getCoverFromID3(fullPath)
+        };
+      });
+
+      if (songs.length) {
+        currentSongIndex = 0;
+        showSong(songs[0]);
+        populateSongsList();
       }
     } catch (err) {
       console.error('Error al cargar carpeta:', err);
     }
   });
 
-  // Botón reproducir/pausar
+  // Shuffle
+  shuffleBtn.addEventListener('click', () => {
+    if (!songs.length) return;
+    let rand;
+    do {
+      rand = Math.floor(Math.random() * songs.length);
+    } while (rand === currentSongIndex && songs.length > 1);
+    currentSongIndex = rand;
+    loadSong(songs[rand]);
+  });
+
+  // Controles básicos
   playBtn.addEventListener('click', () => {
     if (audioPlayer.paused) {
       audioPlayer.play().catch(err => console.error('Error al reproducir:', err));
@@ -125,33 +161,14 @@ document.addEventListener("DOMContentLoaded", () => {
       playBtn.textContent = '▶';
     }
   });
+  prevBtn.addEventListener('click', prevSong);
+  nextBtn.addEventListener('click', nextSong);
+  hamburgerBtn.addEventListener('click', () => toggleSongsMenu());
+  minBtn.addEventListener('click', () => ipcRenderer.send('minimize-app'));
+  closeBtn.addEventListener('click', () => ipcRenderer.send('close-app'));
 
-  // Botón de retroceder (canción anterior)
-  prevBtn.addEventListener('click', () => {
-    if (songs.length > 0) {
-      currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-      loadSong(songs[currentSongIndex]);
-    }
-  });
-
-  // Botón de avanzar (siguiente canción)
-  nextBtn.addEventListener('click', () => {
-    if (songs.length > 0) {
-      currentSongIndex = (currentSongIndex + 1) % songs.length;
-      loadSong(songs[currentSongIndex]);
-    }
-  });
-
-  // Botón hamburguesa para mostrar/ocultar el menú de canciones
-  hamburgerBtn.addEventListener('click', () => {
-    toggleSongsMenu();
-  });
-
-  // Botones para minimizar y cerrar la aplicación
-  minBtn.addEventListener('click', () => {
-    ipcRenderer.send('minimize-app');
-  });
-  closeBtn.addEventListener('click', () => {
-    ipcRenderer.send('close-app');
-  });
+  // -- Media controls desde la thumbnail toolbar --
+  ipcRenderer.on('thumbar-prev', () => prevSong());
+  ipcRenderer.on('thumbar-play', () => playBtn.click());
+  ipcRenderer.on('thumbar-next', () => nextSong());
 });
