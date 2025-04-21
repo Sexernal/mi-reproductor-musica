@@ -37,23 +37,25 @@ body {
   -webkit-app-region: no-drag;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
 }
 
 .control-btn {
   background: transparent;
   border: none;
+  padding: 5px;
   color: white;
   font-size: 14px;
   width: 40px;
   height: 30px;
   cursor: pointer;
   transition: background 0.2s;
-  padding: 0;
+  transition: transform 0.2s;
 }
 
 .control-btn:hover {
   background: rgba(255,255,255,0.2);
+  transform: scale(1.1);
 }
 
 /* Botón de seleccionar carpeta */

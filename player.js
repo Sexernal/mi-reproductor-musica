@@ -171,4 +171,20 @@ document.addEventListener("DOMContentLoaded", () => {
   ipcRenderer.on('thumbar-prev', () => prevSong());
   ipcRenderer.on('thumbar-play', () => playBtn.click());
   ipcRenderer.on('thumbar-next', () => nextSong());
+
+
+
+
+
+  // Actualizar estado de los botones
+function updateThumbarButtons() {
+  const isPlaying = !audioPlayer.paused;
+  ipcRenderer.send('update-thumbar', isPlaying);
+}
+
+// En todos los eventos de control de reproducción
+audioPlayer.addEventListener('play', updateThumbarButtons);
+audioPlayer.addEventListener('pause', updateThumbarButtons);
+audioPlayer.addEventListener('ended', updateThumbarButtons);
+
 });

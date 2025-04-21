@@ -1,20 +1,16 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, nativeImage } = require('electron');
 const path = require('path');
 
-// Helper: genera un nativeImage SVG a partir de un emoji
-function iconFromEmoji(emoji) {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-      <rect width="100%" height="100%" fill="none"/>
-      <text x="16" y="24" font-size="24" text-anchor="middle" fill="white">${emoji}</text>
-    </svg>
-  `;
-  const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  return nativeImage.createFromDataURL(dataUrl);
+let win;
+
+// Helper mejorado para íconos
+function createThumbarIcon(iconName) {
+  return nativeImage.createFromPath(path.join(__dirname, 'assets', `${iconName}.png`))
+    .resize({ width: 24, height: 24 });
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 325,
     height: 435,
     resizable: false,
@@ -22,11 +18,33 @@ function createWindow() {
     frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      backgroundThrottling: false
     }
   });
 
-  // Manejo del diálogo de selección de carpeta
+  // Configurar ThumbarButtons
+  const updateThumbar = (isPlaying = false) => {
+    win.setThumbarButtons([
+      {
+        tooltip: 'Anterior',
+        icon: createThumbarIcon('prev'),
+        click: () => win.webContents.send('thumbar-prev')
+      },
+      {
+        tooltip: isPlaying ? 'Pausar' : 'Reproducir',
+        icon: createThumbarIcon(isPlaying ? 'pause' : 'play'),
+        click: () => win.webContents.send('thumbar-play')
+      },
+      {
+        tooltip: 'Siguiente',
+        icon: createThumbarIcon('next'),
+        click: () => win.webContents.send('thumbar-next')
+      }
+    ]);
+  };
+
+  // Eventos IPC principales
   ipcMain.handle('open-folder-dialog', async () => {
     try {
       const result = await dialog.showOpenDialog(win, {
@@ -39,34 +57,19 @@ function createWindow() {
     }
   });
 
-  // Eventos IPC para minimizar y cerrar la ventana
-  ipcMain.on('minimize-app', () => {
-    if (!win.isMinimized()) win.minimize();
-  });
+  ipcMain.on('minimize-app', () => !win.isMinimized() && win.minimize());
   ipcMain.on('close-app', () => win.close());
+  ipcMain.on('update-thumbar', (_, isPlaying) => updateThumbar(isPlaying));
 
-  // Carga el HTML principal
+  // Configurar eventos de ventana
+  win.on('ready-to-show', () => {
+    updateThumbar();
+    win.show();
+  });
+
+  // Cargar la aplicación
   win.loadFile('index.html');
   Menu.setApplicationMenu(null);
-
-  // Configura los botones en la thumbnail toolbar (barra de tareas)
-  win.setThumbarButtons([
-    {
-      tooltip: 'Anterior',
-      icon: iconFromEmoji('⏮'),
-      click: () => win.webContents.send('thumbar-prev')
-    },
-    {
-      tooltip: 'Play/Pausa',
-      icon: iconFromEmoji('▶'),
-      click: () => win.webContents.send('thumbar-play')
-    },
-    {
-      tooltip: 'Siguiente',
-      icon: iconFromEmoji('⏭'),
-      click: () => win.webContents.send('thumbar-next')
-    }
-  ]);
 
   // Para depuración:
   // win.webContents.openDevTools();
@@ -77,6 +80,7 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
