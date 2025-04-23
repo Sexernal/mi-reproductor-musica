@@ -16,6 +16,7 @@ function createWindow() {
     resizable: false,
     transparent: true,
     frame: false,
+    icon: path.join(__dirname, 'assets', 'inuyasha.png'),  // ← Aquí
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
