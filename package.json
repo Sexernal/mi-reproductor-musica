@@ -4,7 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package-win": "electron-packager . \"MiReproductorMusica\" --platform=win32 --arch=ia32 --out=build --icon=assets/inuyasha1.ico --overwrite",
+    "dist": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -18,11 +20,38 @@
   },
   "homepage": "https://github.com/sexernal/mi-reproductor-musica#readme",
   "devDependencies": {
-    "electron": "^35.1.5"
+    "electron": "^35.1.5",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "fs": "^0.0.1-security",
     "node-id3": "^0.2.9",
     "path": "^0.12.7"
+  },
+  "build": {
+    "appId": "com.sexernal.musicplayer",
+    "productName": "Sexernal",
+    "files": [
+      "index.html",
+      "main.js",
+      "player.js",
+      "styles.css",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/inuyasha1.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
