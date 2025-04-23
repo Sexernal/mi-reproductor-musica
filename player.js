@@ -172,10 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
   ipcRenderer.on('thumbar-play', () => playBtn.click());
   ipcRenderer.on('thumbar-next', () => nextSong());
 
-
-
-
-
   // Actualizar estado de los botones
 function updateThumbarButtons() {
   const isPlaying = !audioPlayer.paused;

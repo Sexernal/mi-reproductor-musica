@@ -19,7 +19,3 @@ electron.exe
 
 # Excluir archivos del sistema operativo (ej: macOS)
 .DS_Store
-
-# Opcional: Excluir package-lock.json si usas npm ci
-# (pero generalmente es recomendable incluirlo)
-# package-lock.json

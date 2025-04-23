@@ -3,7 +3,7 @@ const path = require('path');
 
 let win;
 
-// Helper mejorado para íconos
+// Helper mejorado para papu íconos
 function createThumbarIcon(iconName) {
   return nativeImage.createFromPath(path.join(__dirname, 'assets', `${iconName}.png`))
     .resize({ width: 24, height: 24 });
