@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Helpers para portada ---
   function getDefaultCover() {
-    return `file://${path.join(__dirname, 'assets', 'DK.png')}`;
+    return `file://${path.join(__dirname, 'assets', 'DK1.png')}`;
   }
   function getCoverFromID3(filePath) {
     try {
@@ -119,14 +119,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!paths || !paths.length) return;
       const folder = paths[0];
       const allFiles = fs.readdirSync(folder);
-      const mp3Files = allFiles.filter(f => path.extname(f).toLowerCase() === '.mp3');
+      // Soporte para múltiples formatos de audio
+      const allowedExts = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.opus'];
+      const audioFiles = allFiles.filter(f => allowedExts.includes(path.extname(f).toLowerCase()));
 
-      songs = mp3Files.map(file => {
+      songs = audioFiles.map(file => {
         const fullPath = path.join(folder, file);
+        const ext = path.extname(file).toLowerCase();
         return {
-          title: path.basename(file, '.mp3'),
+          title: path.basename(file, ext),
           file: fullPath,
-          cover: getCoverFromID3(fullPath)
+          // Si es MP3, intenta leer ID3; en otros formatos, usa portada por defecto
+          cover: ext === '.mp3' ? getCoverFromID3(fullPath) : getDefaultCover()
         };
       });
 
@@ -173,14 +177,13 @@ document.addEventListener("DOMContentLoaded", () => {
   ipcRenderer.on('thumbar-next', () => nextSong());
 
   // Actualizar estado de los botones
-function updateThumbarButtons() {
-  const isPlaying = !audioPlayer.paused;
-  ipcRenderer.send('update-thumbar', isPlaying);
-}
+  function updateThumbarButtons() {
+    const isPlaying = !audioPlayer.paused;
+    ipcRenderer.send('update-thumbar', isPlaying);
+  }
 
-// En todos los eventos de control de reproducción
-audioPlayer.addEventListener('play', updateThumbarButtons);
-audioPlayer.addEventListener('pause', updateThumbarButtons);
-audioPlayer.addEventListener('ended', updateThumbarButtons);
+  audioPlayer.addEventListener('play', updateThumbarButtons);
+  audioPlayer.addEventListener('pause', updateThumbarButtons);
+  audioPlayer.addEventListener('ended', updateThumbarButtons);
 
 });
